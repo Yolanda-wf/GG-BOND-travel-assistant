@@ -1,0 +1,6 @@
+openai
+python-dotenv
+
+RESEARCH_MODEL=gpt-4o-mini
+PLANNER_MODEL=gpt-4o
+WRITER_MODEL=gpt-4o ？
