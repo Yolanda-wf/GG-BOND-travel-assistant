@@ -1,6 +1,3 @@
-openai
-python-dotenv
-
-RESEARCH_MODEL=gpt-4o-mini
-PLANNER_MODEL=gpt-4o
-WRITER_MODEL=gpt-4o ？
+flask==3.0.0
+openai==1.30.0
+python-dotenv==1.0.1
