@@ -37,15 +37,22 @@ Built with a modular architecture (**Research → Planner → Writer**) to simul
 ```
 GG-BOND-travel-assistant/
 ├── agents/
-│   ├── __init__.py
-│   ├── research_agent.py     # Collects structured travel data
-│   ├── planner_agent.py      # Generates itinerary (JSON)
-│   ├── writer_agent.py       # Converts plan to readable guide
+│   ├── app.py                 # Flask app & route definitions
+│   ├── research_agent.py      # Collects structured travel data
+│   ├── planner_agent.py       # Generates itinerary (JSON)
+│   ├── writer_agent.py        # Converts plan to readable guide
+│   ├── pipeline_service.py    # Orchestrates the full agent pipeline
 │
-├── main.py                   # Pipeline entry point
-├── requirements.txt          # Dependencies
-├── .env.example              # Environment variables template
-├── README.md
+├── static/
+│   └── style.css              # Frontend styling
+│
+├── templates/
+│   └── index.html             # Main UI template
+│
+├── requirements.txt           # Dependencies
+├── .env.example               # Environment variables template
+├── .gitignore
+└── README.md
 ```
 
 ---
