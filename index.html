@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>GGBOND — Your Travel Assistant</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="page">
+        <div class="input-card">
+            <h1>GGBOND ------- Your Travel Assistant</h1>
+
+            <p class="subtitle">
+                Your personal trip planner and travel curator,<br>
+                creating custom itineraries tailored to your interests and budget.
+            </p>
+
+            <p class="section-title">Tell us your travel preferences:</p>
+
+            <form class="travel-form" id="travelForm">
+                <div class="form-row">
+                    <label for="destination">1. What is destination of choice?:</label>
+                    <input
+                        type="text"
+                        id="destination"
+                        name="destination"
+                        placeholder="Please fill in the name of a city or a country"
+                    >
+                </div>
+
+                <div class="form-row">
+                    <label for="travel_date">2. When are you planning to travel?</label>
+                    <input
+                        type="text"
+                        id="travel_date"
+                        name="travel_date"
+                        placeholder="YYYY-MM-DD, leave blank if unknown"
+                    >
+                </div>
+
+                <div class="form-row">
+                    <label for="trip_duration_days">3. How many days are you planning to travel? [5]:</label>
+                    <input
+                        type="text"
+                        id="trip_duration_days"
+                        name="trip_duration_days"
+                        placeholder="Default: 5 days"
+                    >
+                </div>
+
+                <div class="form-row">
+                    <label for="budget_level">4. What is your budget?</label>
+                    <select id="budget_level" name="budget_level">
+                        <option value="" selected disabled hidden></option>
+                        <option value="low">1. low</option>
+                        <option value="medium">2. medium (default)</option>
+                        <option value="high">3. high</option>
+                    </select>
+                </div>
+
+                <div class="form-row">
+                    <label for="travel_companion">5. Who do you plan on traveling with?</label>
+                    <select id="travel_companion" name="travel_companion">
+                        <option value="" selected disabled hidden></option>
+                        <option value="solo">1. solo (default)</option>
+                        <option value="couple">2. couple</option>
+                        <option value="family">3. family</option>
+                        <option value="friends">4. friends</option>
+                    </select>
+                </div>
+
+                <div class="form-row">
+                    <label>6. Which activities are you interested in?</label>
+                    <div class="checkbox-group">
+                        <label class="checkbox-item">
+                            <input type="checkbox" name="activity_preferences" value="city_sightseeing">
+                            <span>1. city_sightseeing</span>
+                        </label>
+
+                        <label class="checkbox-item">
+                            <input type="checkbox" name="activity_preferences" value="outdoor_adventures">
+                            <span>2. outdoor_adventures</span>
+                        </label>
+
+                        <label class="checkbox-item">
+                            <input type="checkbox" name="activity_preferences" value="festivals_nightlife">
+                            <span>3. festivals_nightlife</span>
+                        </label>
+
+                        <label class="checkbox-item">
+                            <input type="checkbox" name="activity_preferences" value="food_exploration">
+                            <span>4. food_exploration</span>
+                        </label>
+
+                        <label class="checkbox-item">
+                            <input type="checkbox" name="activity_preferences" value="shopping">
+                            <span>5. shopping</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <label>7. Any food preferences?</label>
+                    <div class="inline-group">
+                        <div class="inline-item">
+                            <label for="halal">Halal [0/1]:</label>
+                            <select id="halal" name="halal">
+                                <option value="0" selected>0</option>
+                                <option value="1">1</option>
+                            </select>
+                        </div>
+
+                        <div class="inline-item">
+                            <label for="vegan">Vegan [0/1]:</label>
+                            <select id="vegan" name="vegan">
+                                <option value="0" selected>0</option>
+                                <option value="1">1</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <label for="extra_preferences">8. Any extra preferences or constraints? (optional):</label>
+                    <input type="text" id="extra_preferences" name="extra_preferences">
+                </div>
+
+                <div class="button-row">
+                    <button type="submit" class="submit-btn" id="submitBtn">Submit</button>
+                    <button type="button" class="clear-btn" id="clearBtn">Clear</button>
+                </div>
+            </form>
+        </div>
+
+        <div class="result-card">
+            <h2 class="result-section-title">Here is your personalized customized itinerary:</h2>
+            <div id="resultContainer"></div>
+        </div>
+
+        <div class="result-card">
+            <h2 class="result-section-title">Full Schedule</h2>
+            <div class="markdown-box">
+                <pre id="markdownContainer"></pre>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    const form = document.getElementById("travelForm");
+    const submitBtn = document.getElementById("submitBtn");
+    const clearBtn = document.getElementById("clearBtn");
+    const resultContainer = document.getElementById("resultContainer");
+    const markdownContainer = document.getElementById("markdownContainer");
+
+    function escapeHtml(text) {
+        if (text === null || text === undefined) return "";
+        return String(text)
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+    }
+
+   function renderDayCards(days) {
+    if (!days || days.length === 0) {
+        return `<div class="note-box">No itinerary days were returned.</div>`;
+    }
+
+    return days.map(day => `
+        <div class="day-card">
+            <div class="day-header">${escapeHtml(day.title || "")}</div>
+
+            <div class="segment-grid">
+                <div class="segment-box">
+                    <h3>Schedule</h3>
+                    <div class="activity-text">${escapeHtml(day.schedule || "No schedule available.")}</div>
+                </div>
+
+                <div class="segment-box">
+                    <h3>Transport</h3>
+                    <div class="activity-text">${escapeHtml(day.transport || "No transport note available.")}</div>
+                </div>
+
+                <div class="segment-box">
+                    <h3>Meal</h3>
+                    <div class="activity-text">${escapeHtml(day.meal || "No meal note available.")}</div>
+                </div>
+            </div>
+        </div>
+    `).join("");
+}
+
+    form.addEventListener("submit", async function (event) {
+        event.preventDefault();
+
+        submitBtn.textContent = "Generating...";
+        submitBtn.disabled = true;
+
+        resultContainer.innerHTML = `<div class="note-box">Generating your itinerary...</div>`;
+        markdownContainer.textContent = "Generating full schedule...";
+
+        try {
+            const formData = new FormData(form);
+
+            const response = await fetch("/generate", {
+                method: "POST",
+                body: formData
+            });
+
+            const data = await response.json();
+
+            if (!data.success) {
+                resultContainer.innerHTML = `<div class="note-box">Failed to generate itinerary: ${escapeHtml(data.error || "Unknown error")}</div>`;
+                markdownContainer.textContent = "";
+            } else {
+                const days = data.day_cards || [];
+                const writerMarkdown = data.writer_markdown || "";
+
+                resultContainer.innerHTML = renderDayCards(days);
+                markdownContainer.textContent = writerMarkdown;
+            }
+        } catch (error) {
+            resultContainer.innerHTML = `<div class="note-box">Request failed: ${escapeHtml(error.message)}</div>`;
+            markdownContainer.textContent = "";
+        } finally {
+            submitBtn.textContent = "Submit";
+            submitBtn.disabled = false;
+        }
+    });
+
+    clearBtn.addEventListener("click", function () {
+        form.reset();
+        resultContainer.innerHTML = "";
+        markdownContainer.textContent = "";
+    });
+</script>
+</body>
+</html>
