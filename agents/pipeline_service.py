@@ -4,8 +4,7 @@ from datetime import datetime, timezone
 from research_agent import research_agent
 from planner_agent import (
     planner_agent,
-    build_simple_fallback_planner_output,
-    build_full_input_schema,
+    build_simple_fallback_planner_output
 )
 from writer_agent import writer_agent, build_writer_output_json
 
@@ -55,12 +54,7 @@ def run_pipeline_from_initial_data(initial_data: dict) -> dict:
     ):
         planner_output = build_simple_fallback_planner_output(initial_data, research_data)
 
-    # 4. Add flattened input schema
-    flat_input = build_full_input_schema(initial_data)
-    for key, value in flat_input.items():
-        planner_output.setdefault(key, value)
-
-    # 5. Add default fields
+    # 4. Add default fields
     planner_output.setdefault("itinerary_summary", "")
     planner_output.setdefault(
         "research_summary",
@@ -75,7 +69,7 @@ def run_pipeline_from_initial_data(initial_data: dict) -> dict:
     planner_output.setdefault("tips", research_data.get("planning_hints", []))
     planner_output.setdefault("generated_at", datetime.now(timezone.utc).isoformat())
 
-    # 6. Writer Agent
+    # 5. Writer Agent
     try:
         writer_markdown = writer_agent(planner_output)
         if not isinstance(writer_markdown, str):
@@ -88,7 +82,7 @@ def run_pipeline_from_initial_data(initial_data: dict) -> dict:
             "Please check the API key, model setting, or agent output format, then try again."
         )
 
-    # 7. Build writer output JSON
+    # 6. Build writer output JSON
     try:
         writer_output_json = build_writer_output_json(planner_output, writer_markdown)
     except Exception as e:
@@ -99,7 +93,7 @@ def run_pipeline_from_initial_data(initial_data: dict) -> dict:
             "generated_at": datetime.now(timezone.utc).isoformat(),
         }
 
-    # 8. Parse markdown for frontend cards
+    # 7. Parse markdown for frontend cards
     parsed = parse_writer_markdown(writer_markdown)
 
     return {
